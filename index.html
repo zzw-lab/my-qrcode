@@ -8,8 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
     <!-- 引入html5-qrcode库，用于扫码功能 - 更新为最新版本并添加回调检查 -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <!-- 引入QRCode.js用于生成二维码 -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- 引入xlsx库，用于导出Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- 基本样式 -->
     <style>
         * {
@@ -30,6 +30,14 @@
         .header {
             text-align: center;
             margin-bottom: 20px;
+            position: relative;
+        }
+        .header-buttons {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 10px;
         }
         .qr-container {
             background: white;
@@ -49,14 +57,6 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
-        }
-        .demo-container {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            text-align: center;
         }
         .history-container {
             background: white;
@@ -81,6 +81,11 @@
         .history-content {
             margin-top: 5px;
         }
+        .history-value {
+            margin-top: 5px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
         .tabs {
             display: flex;
             margin-bottom: 15px;
@@ -96,16 +101,6 @@
         .tab.active {
             border-bottom: 2px solid #4CAF50;
             color: #4CAF50;
-        }
-        #qrcode {
-            margin: 15px auto;
-            width: 200px;
-            height: 200px;
-        }
-        .qr-test {
-            margin-top: 10px;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
         }
         .btn {
             display: inline-block;
@@ -135,7 +130,28 @@
             font-size: 14px;
             margin: 5px 0;
         }
-        .demo-input {
+        .btn-icon {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-icon svg {
+            margin-right: 5px;
+            width: 16px;
+            height: 16px;
+        }
+        .input-container {
+            margin-top: 10px;
+        }
+        .input-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-field {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -185,12 +201,57 @@
             margin-bottom: 20px;
             border-left: 4px solid #f44336;
         }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+            gap: 10px;
+        }
         @media (max-width: 400px) {
             .container {
                 padding: 10px;
             }
-            .qr-container, .result-container, .history-container, .demo-container {
+            .qr-container, .result-container, .history-container {
                 padding: 10px;
+            }
+            .header-buttons {
+                position: static;
+                margin: 10px 0;
+                justify-content: center;
             }
         }
     </style>
@@ -201,12 +262,25 @@
             <div class="header">
                 <h1>{{ title }}</h1>
                 <p>{{ description }}</p>
+                <div class="header-buttons">
+                    <button class="btn btn-secondary btn-icon" @click="exportToExcel">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        导出
+                    </button>
+                    <button class="btn btn-secondary btn-icon" @click="sendData">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        发送
+                    </button>
+                </div>
             </div>
             
             <div class="tabs">
                 <div class="tab" :class="{active: activeTab === 'scan'}" @click="activeTab = 'scan'">扫码</div>
                 <div class="tab" :class="{active: activeTab === 'history'}" @click="activeTab = 'history'">历史</div>
-                <div class="tab" :class="{active: activeTab === 'demo'}" @click="activeTab = 'demo'">演示</div>
             </div>
             
             <div v-if="activeTab === 'scan'">
@@ -228,44 +302,63 @@
                     <button class="btn" @click="stopScanner" v-if="isScanning">停止扫码</button>
                 </div>
                 
-                <div class="result-container" v-if="lastResult">
+                <div class="result-container" v-if="lastScannedLabel">
                     <h2>扫码结果:</h2>
-                    <p v-if="isUrl(lastResult)">
-                        <a :href="lastResult" target="_blank" class="link">{{ lastResult }}</a>
+                    <p v-if="isUrl(lastScannedLabel)">
+                        <a :href="lastScannedLabel" target="_blank" class="link">{{ lastScannedLabel }}</a>
                     </p>
-                    <p v-else>{{ lastResult }}</p>
-                    <button class="btn btn-secondary btn-small" @click="copyToClipboard(lastResult)">复制结果</button>
+                    <p v-else>{{ lastScannedLabel }}</p>
+                    <button class="btn btn-secondary btn-small" @click="copyToClipboard(lastScannedLabel)">复制结果</button>
                 </div>
             </div>
             
             <div v-if="activeTab === 'history'">
                 <div class="history-container">
                     <h2>扫码历史</h2>
-                    <div v-if="scanHistory.length === 0" class="empty-history">
+                    <div v-if="scanRecords.length === 0" class="empty-history">
                         <p>暂无扫码记录</p>
                     </div>
                     <div v-else>
-                        <div v-for="(item, index) in scanHistory" :key="index" class="history-item">
-                            <p v-if="isUrl(item.text)">
-                                <a :href="item.text" target="_blank" class="link">{{ item.text }}</a>
+                        <div v-for="item in scanRecords" :key="item.id" class="history-item">
+                            <p><strong>标签:</strong> 
+                                <span v-if="isUrl(item.label)">
+                                    <a :href="item.label" target="_blank" class="link">{{ item.label }}</a>
+                                </span>
+                                <span v-else>{{ item.label }}</span>
                             </p>
-                            <p v-else class="history-content">{{ item.text }}</p>
+                            <p class="history-value"><strong>输入值:</strong> {{ item.value }}</p>
                             <p class="history-time">{{ formatTime(item.time) }}</p>
-                            <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.text)">复制</button>
+                            <div>
+                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.label)">复制标签</button>
+                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.value)">复制值</button>
+                            </div>
                         </div>
                         <button class="btn btn-danger" @click="clearHistory">清空历史记录</button>
                     </div>
                 </div>
             </div>
-            
-            <div v-if="activeTab === 'demo'" class="demo-container">
-                <h2>演示二维码</h2>
-                <p>输入文本生成二维码，然后用摄像头扫描测试</p>
-                <input type="text" v-model="demoText" placeholder="输入文本生成二维码" class="demo-input">
-                <button class="btn btn-secondary" @click="generateQRCode">生成二维码</button>
-                <div id="qrcode"></div>
-                <div class="qr-test">
-                    <p>切换到"扫码"标签并点击"开始扫码"，然后对准这个二维码进行测试</p>
+        </div>
+        
+        <!-- 输入值的弹窗 -->
+        <div class="modal-overlay" v-if="showInputModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>请输入数据</h3>
+                    <button class="modal-close" @click="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-container">
+                        <label>扫码结果 (标签):</label>
+                        <p>{{ tempScannedLabel }}</p>
+                    </div>
+                    <div class="input-container">
+                        <label for="userValue">请输入值:</label>
+                        <input type="text" id="userValue" v-model="tempUserValue" class="input-field" placeholder="请输入相关值...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-small" @click="closeModal">取消</button>
+                    <button class="btn btn-small" @click="saveUserInput">保存</button>
                 </div>
             </div>
         </div>
@@ -279,8 +372,8 @@
             if (typeof Html5Qrcode === 'undefined') {
                 return "QR扫码库 (Html5Qrcode) 未能加载，请检查网络连接并刷新页面";
             }
-            if (typeof QRCode === 'undefined') {
-                return "QR生成库 (QRCode) 未能加载，请检查网络连接并刷新页面";
+            if (typeof XLSX === 'undefined') {
+                return "Excel导出库 (XLSX) 未能加载，请检查网络连接并刷新页面";
             }
             return null;
         }
@@ -296,17 +389,19 @@
                         description: '使用手机相机扫描二维码',
                         html5QrCode: null,
                         isScanning: false,
-                        lastResult: '',
+                        lastScannedLabel: '',
                         cameraId: null,
                         activeTab: 'scan',
-                        demoText: '这是一个测试二维码',
-                        qrcode: null,
-                        scanHistory: [],
+                        scanRecords: [],
+                        nextId: 0,
                         showToast: false,
                         toastMessage: '',
                         isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
                         isIOS: /iPhone|iPad|iPod/i.test(navigator.userAgent),
-                        libraryError: checkLibraries()
+                        libraryError: checkLibraries(),
+                        showInputModal: false,
+                        tempScannedLabel: '',
+                        tempUserValue: ''
                     };
                 },
                 methods: {
@@ -344,13 +439,14 @@
                                         },
                                         (decodedText) => {
                                             // 扫码成功回调
-                                            if (this.lastResult !== decodedText) {
-                                                this.lastResult = decodedText;
-                                                this.addToHistory(decodedText);
-                                                this.showToastMessage('扫码成功！');
+                                            if (this.lastScannedLabel !== decodedText) {
+                                                this.lastScannedLabel = decodedText;
+                                                // 显示输入弹窗
+                                                this.tempScannedLabel = decodedText;
+                                                this.tempUserValue = '';
+                                                this.showInputModal = true;
+                                                this.showToastMessage('扫码成功！请输入值');
                                             }
-                                            // 可选：扫到码后自动停止
-                                            // this.stopScanner();
                                         },
                                         (errorMessage) => {
                                             // 扫码过程中的错误处理（通常无需处理，因为扫码过程中会有很多帧无法识别）
@@ -381,10 +477,13 @@
                                         aspectRatio: 1.0
                                     },
                                     (decodedText) => {
-                                        if (this.lastResult !== decodedText) {
-                                            this.lastResult = decodedText;
-                                            this.addToHistory(decodedText);
-                                            this.showToastMessage('扫码成功！');
+                                        if (this.lastScannedLabel !== decodedText) {
+                                            this.lastScannedLabel = decodedText;
+                                            // 显示输入弹窗
+                                            this.tempScannedLabel = decodedText;
+                                            this.tempUserValue = '';
+                                            this.showInputModal = true;
+                                            this.showToastMessage('扫码成功！请输入值');
                                         }
                                     },
                                     (errorMessage) => {
@@ -411,82 +510,81 @@
                             });
                         }
                     },
-                    generateQRCode() {
-                        // 检查QRCode库是否可用
-                        if (typeof QRCode === 'undefined') {
-                            this.showToastMessage('QR生成库未能加载，请刷新页面重试', 3000);
-                            return;
-                        }
-                        
-                        if (!this.demoText.trim()) {
-                            this.showToastMessage('请输入要生成二维码的文本');
-                            return;
-                        }
-                        
-                        // 清除旧的二维码
-                        const qrcodeElement = document.getElementById('qrcode');
-                        qrcodeElement.innerHTML = '';
-                        
-                        // 创建新的二维码
-                        try {
-                            this.qrcode = new QRCode(qrcodeElement, {
-                                text: this.demoText,
-                                width: 200,
-                                height: 200,
-                                colorDark: "#000000",
-                                colorLight: "#ffffff",
-                                correctLevel: QRCode.CorrectLevel.H
-                            });
-                            
-                            this.showToastMessage('二维码已生成');
-                        } catch (error) {
-                            console.error('生成二维码失败:', error);
-                            this.showToastMessage('生成二维码失败: ' + error.message);
-                        }
+                    closeModal() {
+                        this.showInputModal = false;
+                        this.tempScannedLabel = '';
+                        this.tempUserValue = '';
                     },
-                    addToHistory(text) {
-                        // 添加到历史记录
-                        this.scanHistory.unshift({
-                            text: text,
-                            time: new Date()
-                        });
+                    saveUserInput() {
+                        if (!this.tempUserValue.trim()) {
+                            this.showToastMessage('请输入值');
+                            return;
+                        }
                         
-                        // 限制历史记录数量，最多保存50条
-                        if (this.scanHistory.length > 50) {
-                            this.scanHistory = this.scanHistory.slice(0, 50);
+                        // 添加到数据记录
+                        this.addToRecords(this.tempScannedLabel, this.tempUserValue);
+                        
+                        // 关闭弹窗
+                        this.closeModal();
+                        
+                        this.showToastMessage('保存成功');
+                    },
+                    addToRecords(label, value) {
+                        // 创建新记录
+                        const newRecord = {
+                            id: this.nextId++,
+                            label: label,
+                            value: value,
+                            time: new Date()
+                        };
+                        
+                        // 添加到记录数组
+                        this.scanRecords.unshift(newRecord);
+                        
+                        // 限制记录数量，最多保存50条
+                        if (this.scanRecords.length > 50) {
+                            this.scanRecords = this.scanRecords.slice(0, 50);
                         }
                         
                         // 保存到本地存储
-                        this.saveHistory();
+                        this.saveRecords();
                     },
-                    saveHistory() {
+                    saveRecords() {
                         try {
-                            localStorage.setItem('qrScanHistory', JSON.stringify(this.scanHistory));
+                            localStorage.setItem('scanRecords', JSON.stringify({
+                                records: this.scanRecords,
+                                nextId: this.nextId
+                            }));
                         } catch (e) {
-                            console.error('保存历史记录失败:', e);
+                            console.error('保存记录失败:', e);
                         }
                     },
-                    loadHistory() {
+                    loadRecords() {
                         try {
-                            const history = localStorage.getItem('qrScanHistory');
-                            if (history) {
-                                this.scanHistory = JSON.parse(history);
+                            const savedData = localStorage.getItem('scanRecords');
+                            if (savedData) {
+                                const data = JSON.parse(savedData);
+                                this.scanRecords = data.records || [];
+                                this.nextId = data.nextId || 0;
+                                
                                 // 确保时间对象格式正确
-                                this.scanHistory.forEach(item => {
+                                this.scanRecords.forEach(item => {
                                     if (typeof item.time === 'string') {
                                         item.time = new Date(item.time);
                                     }
                                 });
                             }
                         } catch (e) {
-                            console.error('加载历史记录失败:', e);
-                            this.scanHistory = [];
+                            console.error('加载记录失败:', e);
+                            this.scanRecords = [];
+                            this.nextId = 0;
                         }
                     },
                     clearHistory() {
                         if (confirm('确定要清空所有历史记录吗？')) {
-                            this.scanHistory = [];
-                            this.saveHistory();
+                            this.scanRecords = [];
+                            this.nextId = 0;
+                            this.saveRecords();
                             this.showToastMessage('历史记录已清空');
                         }
                     },
@@ -547,6 +645,50 @@
                             this.showToastMessage('复制失败: ' + err);
                         });
                     },
+                    exportToExcel() {
+                        if (this.scanRecords.length === 0) {
+                            this.showToastMessage('没有数据可供导出');
+                            return;
+                        }
+                        
+                        try {
+                            // 准备导出数据
+                            const exportData = this.scanRecords.map(item => ({
+                                ID: item.id,
+                                标签: item.label,
+                                值: item.value,
+                                时间: this.formatTime(item.time)
+                            }));
+                            
+                            // 创建工作表
+                            const worksheet = XLSX.utils.json_to_sheet(exportData);
+                            
+                            // 创建工作簿
+                            const workbook = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(workbook, worksheet, "扫码记录");
+                            
+                            // 生成Excel文件并下载
+                            const now = new Date();
+                            const fileName = `扫码记录_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}.xlsx`;
+                            
+                            XLSX.writeFile(workbook, fileName);
+                            this.showToastMessage('导出成功');
+                        } catch (error) {
+                            console.error('导出Excel失败:', error);
+                            this.showToastMessage('导出失败: ' + error.message);
+                        }
+                    },
+                    sendData() {
+                        // 此方法由用户自行实现
+                        if (this.scanRecords.length === 0) {
+                            this.showToastMessage('没有数据可供发送');
+                            return;
+                        }
+                        
+                        // 这里只是一个空方法，具体逻辑由用户实现
+                        console.log('准备发送数据:', this.scanRecords);
+                        this.showToastMessage('发送功能需要由您实现');
+                    },
                     showToastMessage(message, duration = 2000) {
                         this.toastMessage = message;
                         this.showToast = true;
@@ -570,14 +712,7 @@
                     }
                     
                     // 加载历史记录
-                    this.loadHistory();
-                    
-                    // 如果QRCode库可用，生成默认二维码
-                    if (typeof QRCode !== 'undefined') {
-                        this.$nextTick(() => {
-                            this.generateQRCode();
-                        });
-                    }
+                    this.loadRecords();
                     
                     // 页面离开时自动停止扫码
                     window.addEventListener('beforeunload', () => {
