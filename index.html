@@ -396,6 +396,7 @@
             createApp({
                 data() {
                     return {
+                        test:false,
                         title: 'Mobile QR Scanner',
                         description: 'Scan QR codes with your phone camera',
                         html5QrCode: null,
@@ -559,7 +560,8 @@
                         await this.stopScanner();
                         
                         // Switch to the next camera in the list
-                        this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
+                        // this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
+                        this.currentCameraIndex = this.test ? 1 : 0;
                         this.showToastMessage(`this.availableCameras.length: ${this.currentCameraIndex}`);
                         
                         // Show which camera is being used
