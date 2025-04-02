@@ -262,7 +262,7 @@
     <div id="app">
         <div class="container">
             <div class="header">
-                <h1>1{{ title }}</h1>
+                <h1>2{{ title }}</h1>
                 <p>{{ description }}</p>
                 <br/>
                 <div class="header-buttons">
@@ -455,6 +455,7 @@
                                     
                                     // Use the currently selected camera
                                     this.cameraId = devices[this.currentCameraIndex].id;
+
                                     
                                     // Start scanning
                                     this.html5QrCode.start(
@@ -552,13 +553,14 @@
                             this.showToastMessage('Only one camera available');
                             return;
                         }
-                        this.showToastMessage(`this.availableCameras.length: ${this.availableCameras.length}`);
+                        // this.showToastMessage(`this.availableCameras.length: ${this.availableCameras.length}`);
                         
                         // Stop the current scanner
                         await this.stopScanner();
                         
                         // Switch to the next camera in the list
                         this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
+                        this.showToastMessage(`this.availableCameras.length: ${this.currentCameraIndex}`);
                         
                         // Show which camera is being used
                         // this.showToastMessage(`Switched to ${/front|user|face/i.test(this.availableCameras[this.currentCameraIndex].label) ? 'front' : 'rear'} camera`);
