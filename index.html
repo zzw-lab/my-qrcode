@@ -262,8 +262,9 @@
     <div id="app">
         <div class="container">
             <div class="header">
-                <h1>{{ title }}</h1>
+                <h1>1{{ title }}</h1>
                 <p>{{ description }}</p>
+                <br/>
                 <div class="header-buttons">
                     <button class="btn btn-secondary btn-icon" @click="exportToExcel">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -560,7 +561,7 @@
                         this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
                         
                         // Show which camera is being used
-                        this.showToastMessage(`Switched to ${/front|user|face/i.test(this.availableCameras[this.currentCameraIndex].label) ? 'front' : 'rear'} camera`);
+                        // this.showToastMessage(`Switched to ${/front|user|face/i.test(this.availableCameras[this.currentCameraIndex].label) ? 'front' : 'rear'} camera`);
                         
                         // Restart the scanner with the new camera
                         this.startScanner();
