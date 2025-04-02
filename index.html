@@ -302,6 +302,13 @@
                     <div id="reader"></div>
                     <button class="btn" @click="startScanner" v-if="!isScanning" :disabled="libraryError">Start Scanning</button>
                     <button class="btn" @click="stopScanner" v-if="isScanning">Stop Scanning</button>
+                    <button class="btn btn-secondary" @click="switchCamera" v-if="isScanning && availableCameras.length > 1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 5px;">
+                            <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
+                            <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                        </svg>
+                        翻转摄像头
+                    </button>
                 </div>
                 
                 <div class="result-container" v-if="lastScannedLabel">
@@ -404,7 +411,9 @@
                         libraryError: checkLibraries(),
                         showInputModal: false,
                         tempScannedLabel: '',
-                        tempUserValue: ''
+                        tempUserValue: '',
+                        availableCameras: [],
+                        currentCameraIndex: 0
                     };
                 },
                 methods: {
@@ -428,9 +437,23 @@
                             try {
                                 const devices = await Html5Qrcode.getCameras();
                                 if (devices && devices.length) {
-                                    // Prefer rear camera (typically better for scanning)
-                                    const rearCamera = devices.find(camera => /back|rear|environment/i.test(camera.label));
-                                    this.cameraId = rearCamera ? rearCamera.id : devices[0].id;
+                                    // Store available cameras
+                                    this.availableCameras = devices;
+                                    
+                                    // If this is the first time, find the rear camera
+                                    if (this.currentCameraIndex === 0) {
+                                        // Prefer rear camera (typically better for scanning)
+                                        const rearCameraIndex = devices.findIndex(camera => 
+                                            /back|rear|environment/i.test(camera.label));
+                                        
+                                        // If found, set current index to rear camera
+                                        if (rearCameraIndex !== -1) {
+                                            this.currentCameraIndex = rearCameraIndex;
+                                        }
+                                    }
+                                    
+                                    // Use the currently selected camera
+                                    this.cameraId = devices[this.currentCameraIndex].id;
                                     
                                     // Start scanning
                                     this.html5QrCode.start(
@@ -450,12 +473,6 @@
                                                 this.showInputModal = true;
                                                 this.showToastMessage('Scan successful! Please enter a value');
                                             }
-                                            // this.lastScannedLabel = decodedText;
-                                            //     // Show input modal
-                                            //     this.tempScannedLabel = decodedText;
-                                            //     this.tempUserValue = '';
-                                            //     this.showInputModal = true;
-                                            //     this.showToastMessage('Scan successful! Please enter a value');
                                         },
                                         (errorMessage) => {
                                             // Error handling during scanning (usually no need to handle as many frames cannot be recognized)
@@ -510,14 +527,34 @@
                             this.showToastMessage(`Scanner error: ${error.message}`, 3000);
                         }
                     },
+                    async switchCamera() {
+                        // Don't do anything if there are not at least 2 cameras
+                        if (this.availableCameras.length < 2) {
+                            this.showToastMessage('只有一个摄像头可用');
+                            return;
+                        }
+                        
+                        // Stop the current scanner
+                        await this.stopScanner();
+                        
+                        // Switch to the next camera in the list
+                        this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
+                        
+                        // Show which camera is being used
+                        this.showToastMessage(`切换到${/front|user|face/i.test(this.availableCameras[this.currentCameraIndex].label) ? '前置' : '后置'}摄像头`);
+                        
+                        // Restart the scanner with the new camera
+                        this.startScanner();
+                    },
                     stopScanner() {
                         if (this.html5QrCode && this.isScanning) {
-                            this.html5QrCode.stop().then(() => {
+                            return this.html5QrCode.stop().then(() => {
                                 this.isScanning = false;
                             }).catch(err => {
                                 console.error('Error stopping scanner:', err);
                             });
                         }
+                        return Promise.resolve();
                     },
                     closeModal() {
                         this.showInputModal = false;
