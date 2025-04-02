@@ -262,7 +262,7 @@
     <div id="app">
         <div class="container">
             <div class="header">
-                <h1>5{{ title }}</h1>
+                <h1>{{ title }}</h1>
                 <p>{{ description }}</p>
                 <br/>
                 <div class="header-buttons">
@@ -441,23 +441,8 @@
                                 if (devices && devices.length) {
                                     // Store available cameras
                                     this.availableCameras = devices;
-                                    
-                                    // // If this is the first time, find the rear camera
-                                    // if (this.currentCameraIndex === 0) {
-                                    //     // Prefer rear camera (typically better for scanning)
-                                    //     const rearCameraIndex = devices.findIndex(camera => 
-                                    //         /back|rear|environment/i.test(camera.label));
-                                        
-                                    //     // If found, set current index to rear camera
-                                    //     if (rearCameraIndex !== -1) {
-                                    //         this.currentCameraIndex = rearCameraIndex;
-                                    //     }
-                                    // }
-                                    
-                                    // Use the currently selected camera
 
                                     this.cameraId = devices[this.currentCameraIndex].id;
-                                    this.showToastMessage('cameraId: ' + this.cameraId);
 
                                     
                                     // Start scanning
@@ -560,16 +545,8 @@
                         
                         // Stop the current scanner
                         await this.stopScanner();
-                        
-                        // Switch to the next camera in the list
-                        // this.currentCameraIndex = (this.currentCameraIndex + 1) % this.availableCameras.length;
                         this.currentCameraIndex = this.test ? 1 : 0;
                         this.test = !this.test;
-                        this.showToastMessage(`this.availableCameras.length: ${this.currentCameraIndex}`);
-                        
-                        // Show which camera is being used
-                        // this.showToastMessage(`Switched to ${/front|user|face/i.test(this.availableCameras[this.currentCameraIndex].label) ? 'front' : 'rear'} camera`);
-                        
                         // Restart the scanner with the new camera
                         this.startScanner();
                     },
