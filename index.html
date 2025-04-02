@@ -551,6 +551,7 @@
                             this.showToastMessage('Only one camera available');
                             return;
                         }
+                        this.showToastMessage(`this.availableCameras.length: ${this.availableCameras.length}`);
                         
                         // Stop the current scanner
                         await this.stopScanner();
