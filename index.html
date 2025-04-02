@@ -533,11 +533,18 @@
                     },
                     addToRecords(label, value) {
                         // Create new record
+                        const now = new Date();
+                        
+                        // Store time in MySQL DATETIME compatible format 'YYYY-MM-DD HH:MM:SS'
+                        // Using UTC to avoid timezone issues
+                        const mysqlDatetime = this.formatMysqlDatetime(now);
+                        
                         const newRecord = {
                             id: this.nextId++,
                             label: label,
                             value: value,
-                            time: new Date()
+                            time: now,
+                            mysqlDatetime: mysqlDatetime
                         };
                         
                         // Add to records array
@@ -546,8 +553,27 @@
                         // Save to local storage
                         this.saveRecords();
                     },
+                    formatMysqlDatetime(date) {
+                        // Format date to MySQL DATETIME format: YYYY-MM-DD HH:MM:SS
+                        // Using UTC to ensure consistent format regardless of locale
+                        return date.getUTCFullYear() + '-' + 
+                               String(date.getUTCMonth() + 1).padStart(2, '0') + '-' +
+                               String(date.getUTCDate()).padStart(2, '0') + ' ' +
+                               String(date.getUTCHours()).padStart(2, '0') + ':' +
+                               String(date.getUTCMinutes()).padStart(2, '0') + ':' +
+                               String(date.getUTCSeconds()).padStart(2, '0');
+                    },
                     saveRecords() {
                         try {
+                            // Ensure all records have MySql datetime format before saving
+                            this.scanRecords.forEach(record => {
+                                if (!record.mysqlDatetime && record.time) {
+                                    record.mysqlDatetime = this.formatMysqlDatetime(
+                                        record.time instanceof Date ? record.time : new Date(record.time)
+                                    );
+                                }
+                            });
+                            
                             localStorage.setItem('scanRecords', JSON.stringify({
                                 records: this.scanRecords,
                                 nextId: this.nextId
@@ -568,6 +594,11 @@
                                 this.scanRecords.forEach(item => {
                                     if (typeof item.time === 'string') {
                                         item.time = new Date(item.time);
+                                    }
+                                    
+                                    // Ensure MySQL datetime format exists
+                                    if (!item.mysqlDatetime) {
+                                        item.mysqlDatetime = this.formatMysqlDatetime(item.time);
                                     }
                                 });
                             } else {
@@ -596,31 +627,36 @@
                                 id: 0,
                                 label: "Product ID: A12345",
                                 value: "99.8",
-                                time: now
+                                time: now,
+                                mysqlDatetime: this.formatMysqlDatetime(now)
                             },
                             {
                                 id: 1,
                                 label: "https://example.com/product/56789",
                                 value: "Online Product",
-                                time: yesterday
+                                time: yesterday,
+                                mysqlDatetime: this.formatMysqlDatetime(yesterday)
                             },
                             {
                                 id: 2,
                                 label: "Employee ID: EMP-2023-0042",
                                 value: "John Smith",
-                                time: yesterday
+                                time: yesterday,
+                                mysqlDatetime: this.formatMysqlDatetime(yesterday)
                             },
                             {
                                 id: 3,
                                 label: "Inventory Item: INV-2023-1201",
                                 value: "150",
-                                time: twoDaysAgo
+                                time: twoDaysAgo,
+                                mysqlDatetime: this.formatMysqlDatetime(twoDaysAgo)
                             },
                             {
                                 id: 4,
                                 label: "Meeting Room: 3F-MR01",
                                 value: "Booking Successful",
-                                time: twoDaysAgo
+                                time: twoDaysAgo,
+                                mysqlDatetime: this.formatMysqlDatetime(twoDaysAgo)
                             }
                         ];
                         
@@ -707,7 +743,8 @@
                                 ID: item.id,
                                 Label: item.label,
                                 Value: item.value,
-                                Time: this.formatTime(item.time)
+                                Time: this.formatTime(item.time),
+                                MySQLDateTime: item.mysqlDatetime
                             }));
                             
                             // Create worksheet
@@ -737,6 +774,7 @@
                         
                         // This is just an empty method, specific logic to be implemented by user
                         console.log('Preparing to send data:', this.scanRecords);
+                        console.log('MySQL compatible datetime values:', this.scanRecords.map(item => item.mysqlDatetime));
                         this.showToastMessage('Send function needs to be implemented by you');
                     },
                     showToastMessage(message, duration = 2000) {
