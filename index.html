@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>手机扫码应用</title>
+    <title>Mobile QR Scanner</title>
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
      <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script> -->
@@ -269,98 +269,98 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        导出
+                        Export
                     </button>
                     <button class="btn btn-secondary btn-icon" @click="sendData">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
-                        发送
+                        Send
                     </button>
                 </div>
             </div>
             
             <div class="tabs">
-                <div class="tab" :class="{active: activeTab === 'scan'}" @click="activeTab = 'scan'">扫码</div>
-                <div class="tab" :class="{active: activeTab === 'history'}" @click="activeTab = 'history'">历史</div>
+                <div class="tab" :class="{active: activeTab === 'scan'}" @click="activeTab = 'scan'">Scan</div>
+                <div class="tab" :class="{active: activeTab === 'history'}" @click="activeTab = 'history'">History</div>
             </div>
             
             <div v-if="activeTab === 'scan'">
                 <div class="tips" v-if="isMobile">
-                    <p><strong>提示：</strong>请确保您已授予摄像头权限。</p>
+                    <p><strong>Tip:</strong> Please ensure you have granted camera permissions.</p>
                 </div>
                 <div class="tips tips-ios" v-if="isIOS">
-                    <p><strong>iOS注意:</strong> 在iOS上，需要通过HTTPS访问才能使用摄像头功能。</p>
+                    <p><strong>iOS Note:</strong> On iOS, you need to access via HTTPS to use the camera function.</p>
                 </div>
                 
                 <div class="error-container" v-if="libraryError">
-                    <p><strong>加载错误:</strong> {{ libraryError }}</p>
-                    <p>请尝试刷新页面或检查网络连接。</p>
+                    <p><strong>Loading Error:</strong> {{ libraryError }}</p>
+                    <p>Please try refreshing the page or check your network connection.</p>
                 </div>
                 
                 <div class="qr-container">
                     <div id="reader"></div>
-                    <button class="btn" @click="startScanner" v-if="!isScanning" :disabled="libraryError">开始扫码</button>
-                    <button class="btn" @click="stopScanner" v-if="isScanning">停止扫码</button>
+                    <button class="btn" @click="startScanner" v-if="!isScanning" :disabled="libraryError">Start Scanning</button>
+                    <button class="btn" @click="stopScanner" v-if="isScanning">Stop Scanning</button>
                 </div>
                 
                 <div class="result-container" v-if="lastScannedLabel">
-                    <h2>扫码结果:</h2>
+                    <h2>Scan Result:</h2>
                     <p v-if="isUrl(lastScannedLabel)">
                         <a :href="lastScannedLabel" target="_blank" class="link">{{ lastScannedLabel }}</a>
                     </p>
                     <p v-else>{{ lastScannedLabel }}</p>
-                    <button class="btn btn-secondary btn-small" @click="copyToClipboard(lastScannedLabel)">复制结果</button>
+                    <button class="btn btn-secondary btn-small" @click="copyToClipboard(lastScannedLabel)">Copy Result</button>
                 </div>
             </div>
             
             <div v-if="activeTab === 'history'">
                 <div class="history-container">
-                    <h2>扫码历史</h2>
+                    <h2>Scan History</h2>
                     <div v-if="scanRecords.length === 0" class="empty-history">
-                        <p>暂无扫码记录</p>
+                        <p>No scan records yet</p>
                     </div>
                     <div v-else>
                         <div v-for="item in scanRecords" :key="item.id" class="history-item">
-                            <p><strong>标签:</strong> 
+                            <p><strong>Label:</strong> 
                                 <span v-if="isUrl(item.label)">
                                     <a :href="item.label" target="_blank" class="link">{{ item.label }}</a>
                                 </span>
                                 <span v-else>{{ item.label }}</span>
                             </p>
-                            <p class="history-value"><strong>输入值:</strong> {{ item.value }}</p>
+                            <p class="history-value"><strong>Value:</strong> {{ item.value }}</p>
                             <p class="history-time">{{ formatTime(item.time) }}</p>
                             <div>
-                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.label)">复制标签</button>
-                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.value)">复制值</button>
+                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.label)">Copy Label</button>
+                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.value)">Copy Value</button>
                             </div>
                         </div>
-                        <button class="btn btn-danger" @click="clearHistory">清空历史记录</button>
+                        <button class="btn btn-danger" @click="clearHistory">Clear History</button>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- 输入值的弹窗 -->
+        <!-- Input Value Modal -->
         <div class="modal-overlay" v-if="showInputModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>请输入数据</h3>
+                    <h3>Enter Data</h3>
                     <button class="modal-close" @click="closeModal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="input-container">
-                        <label>扫码结果 (标签):</label>
+                        <label>Scan Result (Label):</label>
                         <p>{{ tempScannedLabel }}</p>
                     </div>
                     <div class="input-container">
-                        <label for="userValue">请输入值:</label>
-                        <input type="text" id="userValue" v-model="tempUserValue" class="input-field" placeholder="请输入相关值...">
+                        <label for="userValue">Please enter value:</label>
+                        <input type="text" id="userValue" v-model="tempUserValue" class="input-field" placeholder="Enter related value...">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary btn-small" @click="closeModal">取消</button>
-                    <button class="btn btn-small" @click="saveUserInput">保存</button>
+                    <button class="btn btn-secondary btn-small" @click="closeModal">Cancel</button>
+                    <button class="btn btn-small" @click="saveUserInput">Save</button>
                 </div>
             </div>
         </div>
@@ -369,26 +369,26 @@
     </div>
 
     <script>
-        // 确认所需库是否加载成功
+        // Check if required libraries are loaded
         function checkLibraries() {
             if (typeof Html5Qrcode === 'undefined') {
-                return "QR扫码库 (Html5Qrcode) 未能加载，请检查网络连接并刷新页面";
+                return "QR Scanner library (Html5Qrcode) failed to load. Please check your network connection and refresh the page.";
             }
             if (typeof XLSX === 'undefined') {
-                return "Excel导出库 (XLSX) 未能加载，请检查网络连接并刷新页面";
+                return "Excel export library (XLSX) failed to load. Please check your network connection and refresh the page.";
             }
             return null;
         }
 
-        // 等待文档加载完成
+        // Wait for document to load completely
         document.addEventListener('DOMContentLoaded', function() {
             const { createApp } = Vue;
 
             createApp({
                 data() {
                     return {
-                        title: '手机扫码应用',
-                        description: '使用手机相机扫描二维码',
+                        title: 'Mobile QR Scanner',
+                        description: 'Scan QR codes with your phone camera',
                         html5QrCode: null,
                         isScanning: false,
                         lastScannedLabel: '',
@@ -408,30 +408,30 @@
                 },
                 methods: {
                     async startScanner() {
-                        // 再次检查库是否可用
+                        // Check if library is available
                         if (typeof Html5Qrcode === 'undefined') {
-                            this.libraryError = "QR扫码库 (Html5Qrcode) 未能加载";
-                            this.showToastMessage("扫码功能不可用，请刷新页面重试", 3000);
+                            this.libraryError = "QR Scanner library (Html5Qrcode) failed to load";
+                            this.showToastMessage("Scanning function unavailable, please refresh the page", 3000);
                             return;
                         }
                         
                         try {
                             this.isScanning = true;
                             
-                            // 如果还没有初始化扫码对象
+                            // Initialize scanner if not already done
                             if (!this.html5QrCode) {
                                 this.html5QrCode = new Html5Qrcode("reader");
                             }
                             
-                            // 获取可用相机列表
+                            // Get available cameras
                             try {
                                 const devices = await Html5Qrcode.getCameras();
                                 if (devices && devices.length) {
-                                    // 优先使用后置摄像头（通常更适合扫码）
-                                    const rearCamera = devices.find(camera => /back|rear|环境|后置/i.test(camera.label));
+                                    // Prefer rear camera (typically better for scanning)
+                                    const rearCamera = devices.find(camera => /back|rear|environment/i.test(camera.label));
                                     this.cameraId = rearCamera ? rearCamera.id : devices[0].id;
                                     
-                                    // 开始扫码
+                                    // Start scanning
                                     this.html5QrCode.start(
                                         this.cameraId,
                                         {
@@ -440,37 +440,37 @@
                                             aspectRatio: 1.0
                                         },
                                         (decodedText) => {
-                                            // 扫码成功回调
+                                            // Successful scan callback
                                             if (this.lastScannedLabel !== decodedText) {
                                                 this.lastScannedLabel = decodedText;
-                                                // 显示输入弹窗
+                                                // Show input modal
                                                 this.tempScannedLabel = decodedText;
                                                 this.tempUserValue = '';
                                                 this.showInputModal = true;
-                                                this.showToastMessage('扫码成功！请输入值');
+                                                this.showToastMessage('Scan successful! Please enter a value');
                                             }
                                         },
                                         (errorMessage) => {
-                                            // 扫码过程中的错误处理（通常无需处理，因为扫码过程中会有很多帧无法识别）
+                                            // Error handling during scanning (usually no need to handle as many frames cannot be recognized)
                                             console.log(errorMessage);
                                         }
                                     ).catch((err) => {
-                                        console.error(`启动扫码器失败: ${err}`);
+                                        console.error(`Failed to start scanner: ${err}`);
                                         this.isScanning = false;
-                                        this.showToastMessage(`无法启动摄像头: ${err}`, 3000);
+                                        this.showToastMessage(`Cannot start camera: ${err}`, 3000);
                                     });
                                 } else {
-                                    this.showToastMessage('未检测到可用的摄像头设备', 3000);
+                                    this.showToastMessage('No available camera devices detected', 3000);
                                     this.isScanning = false;
                                 }
                             } catch (error) {
-                                console.error('获取摄像头列表失败:', error);
+                                console.error('Failed to get camera list:', error);
                                 this.isScanning = false;
                                 
-                                // 尝试使用默认摄像头
-                                this.showToastMessage('无法获取摄像头列表，尝试使用默认摄像头...', 2000);
+                                // Try using default camera
+                                this.showToastMessage('Unable to get camera list, trying default camera...', 2000);
                                 
-                                // 使用true作为cameraId来尝试访问默认摄像头
+                                // Use true as cameraId to try to access default camera
                                 this.html5QrCode.start(
                                     true,
                                     {
@@ -481,26 +481,26 @@
                                     (decodedText) => {
                                         if (this.lastScannedLabel !== decodedText) {
                                             this.lastScannedLabel = decodedText;
-                                            // 显示输入弹窗
+                                            // Show input modal
                                             this.tempScannedLabel = decodedText;
                                             this.tempUserValue = '';
                                             this.showInputModal = true;
-                                            this.showToastMessage('扫码成功！请输入值');
+                                            this.showToastMessage('Scan successful! Please enter a value');
                                         }
                                     },
                                     (errorMessage) => {
                                         console.log(errorMessage);
                                     }
                                 ).catch((err) => {
-                                    console.error(`启动默认摄像头失败: ${err}`);
+                                    console.error(`Failed to start default camera: ${err}`);
                                     this.isScanning = false;
-                                    this.showToastMessage(`无法启动摄像头: ${err}`, 3000);
+                                    this.showToastMessage(`Cannot start camera: ${err}`, 3000);
                                 });
                             }
                         } catch (error) {
-                            console.error('扫码器启动错误:', error);
+                            console.error('Scanner startup error:', error);
                             this.isScanning = false;
-                            this.showToastMessage(`扫码器错误: ${error.message}`, 3000);
+                            this.showToastMessage(`Scanner error: ${error.message}`, 3000);
                         }
                     },
                     stopScanner() {
@@ -508,7 +508,7 @@
                             this.html5QrCode.stop().then(() => {
                                 this.isScanning = false;
                             }).catch(err => {
-                                console.error('停止扫码器时出错:', err);
+                                console.error('Error stopping scanner:', err);
                             });
                         }
                     },
@@ -519,20 +519,20 @@
                     },
                     saveUserInput() {
                         if (!this.tempUserValue.trim()) {
-                            this.showToastMessage('请输入值');
+                            this.showToastMessage('Please enter a value');
                             return;
                         }
                         
-                        // 添加到数据记录
+                        // Add to data records
                         this.addToRecords(this.tempScannedLabel, this.tempUserValue);
                         
-                        // 关闭弹窗
+                        // Close modal
                         this.closeModal();
                         
-                        this.showToastMessage('保存成功');
+                        this.showToastMessage('Saved successfully');
                     },
                     addToRecords(label, value) {
-                        // 创建新记录
+                        // Create new record
                         const newRecord = {
                             id: this.nextId++,
                             label: label,
@@ -540,11 +540,10 @@
                             time: new Date()
                         };
                         
-                        // 添加到记录数组
+                        // Add to records array
                         this.scanRecords.unshift(newRecord);
                         
-                        
-                        // 保存到本地存储
+                        // Save to local storage
                         this.saveRecords();
                     },
                     saveRecords() {
@@ -554,7 +553,7 @@
                                 nextId: this.nextId
                             }));
                         } catch (e) {
-                            console.error('保存记录失败:', e);
+                            console.error('Failed to save records:', e);
                         }
                     },
                     loadRecords() {
@@ -565,25 +564,78 @@
                                 this.scanRecords = data.records || [];
                                 this.nextId = data.nextId || 0;
                                 
-                                // 确保时间对象格式正确
+                                // Ensure correct time object format
                                 this.scanRecords.forEach(item => {
                                     if (typeof item.time === 'string') {
                                         item.time = new Date(item.time);
                                     }
                                 });
+                            } else {
+                                // If no saved records, add some demo data
+                                this.addDemoData();
                             }
                         } catch (e) {
-                            console.error('加载记录失败:', e);
+                            console.error('Failed to load records:', e);
                             this.scanRecords = [];
                             this.nextId = 0;
+                            
+                            // Add demo data in exception case as well
+                            this.addDemoData();
                         }
                     },
+                    addDemoData() {
+                        // Add some demo data
+                        const now = new Date();
+                        const yesterday = new Date(now);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const twoDaysAgo = new Date(now);
+                        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+                        
+                        this.scanRecords = [
+                            {
+                                id: 0,
+                                label: "Product ID: A12345",
+                                value: "99.8",
+                                time: now
+                            },
+                            {
+                                id: 1,
+                                label: "https://example.com/product/56789",
+                                value: "Online Product",
+                                time: yesterday
+                            },
+                            {
+                                id: 2,
+                                label: "Employee ID: EMP-2023-0042",
+                                value: "John Smith",
+                                time: yesterday
+                            },
+                            {
+                                id: 3,
+                                label: "Inventory Item: INV-2023-1201",
+                                value: "150",
+                                time: twoDaysAgo
+                            },
+                            {
+                                id: 4,
+                                label: "Meeting Room: 3F-MR01",
+                                value: "Booking Successful",
+                                time: twoDaysAgo
+                            }
+                        ];
+                        
+                        // Set next ID
+                        this.nextId = this.scanRecords.length;
+                        
+                        // Don't save these demo data to localStorage
+                        // Only user-added data will be saved
+                    },
                     clearHistory() {
-                        if (confirm('确定要清空所有历史记录吗？')) {
+                        if (confirm('Are you sure you want to clear all history records?')) {
                             this.scanRecords = [];
                             this.nextId = 0;
                             this.saveRecords();
-                            this.showToastMessage('历史记录已清空');
+                            this.showToastMessage('History cleared');
                         }
                     },
                     formatTime(date) {
@@ -595,17 +647,17 @@
                         
                         const d = new Date(date);
                         
-                        // 判断是否是今天
+                        // Check if it's today
                         if (d.toDateString() === now.toDateString()) {
-                            return '今天 ' + d.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
+                            return 'Today ' + d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
                         }
-                        // 判断是否是昨天
+                        // Check if it's yesterday
                         else if (d.toDateString() === yesterday.toDateString()) {
-                            return '昨天 ' + d.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
+                            return 'Yesterday ' + d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
                         }
-                        // 其他日期显示完整日期
+                        // Other dates show full date
                         else {
-                            return d.toLocaleDateString('zh-CN') + ' ' + d.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
+                            return d.toLocaleDateString('en-US') + ' ' + d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
                         }
                     },
                     isUrl(text) {
@@ -614,10 +666,10 @@
                     },
                     copyToClipboard(text) {
                         if (!navigator.clipboard) {
-                            // 回退方法
+                            // Fallback method
                             const textArea = document.createElement('textarea');
                             textArea.value = text;
-                            textArea.style.position = 'fixed';  // 避免滚动到底部
+                            textArea.style.position = 'fixed';  // Avoid scrolling to bottom
                             document.body.appendChild(textArea);
                             textArea.focus();
                             textArea.select();
@@ -625,12 +677,12 @@
                             try {
                                 const successful = document.execCommand('copy');
                                 if (successful) {
-                                    this.showToastMessage('复制成功');
+                                    this.showToastMessage('Copied successfully');
                                 } else {
-                                    this.showToastMessage('复制失败，请手动复制');
+                                    this.showToastMessage('Copy failed, please copy manually');
                                 }
                             } catch (err) {
-                                this.showToastMessage('复制失败: ' + err);
+                                this.showToastMessage('Copy failed: ' + err);
                             }
                             
                             document.body.removeChild(textArea);
@@ -638,81 +690,81 @@
                         }
                         
                         navigator.clipboard.writeText(text).then(() => {
-                            this.showToastMessage('复制成功');
+                            this.showToastMessage('Copied successfully');
                         }, (err) => {
-                            this.showToastMessage('复制失败: ' + err);
+                            this.showToastMessage('Copy failed: ' + err);
                         });
                     },
                     exportToExcel() {
                         if (this.scanRecords.length === 0) {
-                            this.showToastMessage('没有数据可供导出');
+                            this.showToastMessage('No data available for export');
                             return;
                         }
                         
                         try {
-                            // 准备导出数据
+                            // Prepare export data
                             const exportData = this.scanRecords.map(item => ({
                                 ID: item.id,
-                                标签: item.label,
-                                值: item.value,
-                                时间: this.formatTime(item.time)
+                                Label: item.label,
+                                Value: item.value,
+                                Time: this.formatTime(item.time)
                             }));
                             
-                            // 创建工作表
+                            // Create worksheet
                             const worksheet = XLSX.utils.json_to_sheet(exportData);
                             
-                            // 创建工作簿
+                            // Create workbook
                             const workbook = XLSX.utils.book_new();
-                            XLSX.utils.book_append_sheet(workbook, worksheet, "扫码记录");
+                            XLSX.utils.book_append_sheet(workbook, worksheet, "Scan Records");
                             
-                            // 生成Excel文件并下载
+                            // Generate Excel file and download
                             const now = new Date();
-                            const fileName = `扫码记录_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}.xlsx`;
+                            const fileName = `ScanRecords_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}.xlsx`;
                             
                             XLSX.writeFile(workbook, fileName);
-                            this.showToastMessage('导出成功');
+                            this.showToastMessage('Export successful');
                         } catch (error) {
-                            console.error('导出Excel失败:', error);
-                            this.showToastMessage('导出失败: ' + error.message);
+                            console.error('Failed to export Excel:', error);
+                            this.showToastMessage('Export failed: ' + error.message);
                         }
                     },
                     sendData() {
-                        // 此方法由用户自行实现
+                        // This method to be implemented by user
                         if (this.scanRecords.length === 0) {
-                            this.showToastMessage('没有数据可供发送');
+                            this.showToastMessage('No data available to send');
                             return;
                         }
                         
-                        // 这里只是一个空方法，具体逻辑由用户实现
-                        console.log('准备发送数据:', this.scanRecords);
-                        this.showToastMessage('发送功能需要由您实现');
+                        // This is just an empty method, specific logic to be implemented by user
+                        console.log('Preparing to send data:', this.scanRecords);
+                        this.showToastMessage('Send function needs to be implemented by you');
                     },
                     showToastMessage(message, duration = 2000) {
                         this.toastMessage = message;
                         this.showToast = true;
                         
-                        // 清除之前的定时器
+                        // Clear previous timer
                         if (this.toastTimer) {
                             clearTimeout(this.toastTimer);
                         }
                         
-                        // 设置定时器自动隐藏提示
+                        // Set timer to automatically hide toast
                         this.toastTimer = setTimeout(() => {
                             this.showToast = false;
                         }, duration);
                     }
                 },
                 mounted() {
-                    // 检查库是否加载成功
+                    // Check if libraries loaded successfully
                     if (this.libraryError) {
-                        console.error('库加载错误:', this.libraryError);
+                        console.error('Library loading error:', this.libraryError);
                         this.showToastMessage(this.libraryError, 5000);
                     }
                     
-                    // 加载历史记录
+                    // Load history records
                     this.loadRecords();
                     
-                    // 页面离开时自动停止扫码
+                    // Automatically stop scanner when page is left
                     window.addEventListener('beforeunload', () => {
                         this.stopScanner();
                     });
