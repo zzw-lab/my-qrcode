@@ -441,14 +441,20 @@
                                         },
                                         (decodedText) => {
                                             // Successful scan callback
-                                            if (this.lastScannedLabel !== decodedText) {
-                                                this.lastScannedLabel = decodedText;
+                                            // if (this.lastScannedLabel !== decodedText) {
+                                            //     this.lastScannedLabel = decodedText;
+                                            //     // Show input modal
+                                            //     this.tempScannedLabel = decodedText;
+                                            //     this.tempUserValue = '';
+                                            //     this.showInputModal = true;
+                                            //     this.showToastMessage('Scan successful! Please enter a value');
+                                            // }
+                                            this.lastScannedLabel = decodedText;
                                                 // Show input modal
                                                 this.tempScannedLabel = decodedText;
                                                 this.tempUserValue = '';
                                                 this.showInputModal = true;
                                                 this.showToastMessage('Scan successful! Please enter a value');
-                                            }
                                         },
                                         (errorMessage) => {
                                             // Error handling during scanning (usually no need to handle as many frames cannot be recognized)
