@@ -13,250 +13,7 @@
     <script src="./static/js/vue.global.js"></script>
     <script src="./static/js/html5-qrcode.min.js"></script>
     <script src="./static/js/xlsx.full.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        .header-buttons {
-            position: absolute;
-            top: 0;
-            right: 0;
-            display: flex;
-            gap: 10px;
-        }
-        .qr-container {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        #reader {
-            width: 100%;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .result-container {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .history-container {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .history-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            word-break: break-all;
-        }
-        .history-item:last-child {
-            border-bottom: none;
-        }
-        .history-time {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-        }
-        .history-content {
-            margin-top: 5px;
-        }
-        .history-value {
-            margin-top: 5px;
-            font-weight: bold;
-            color: #4CAF50;
-        }
-        .tabs {
-            display: flex;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        .tab {
-            padding: 10px 15px;
-            cursor: pointer;
-            flex: 1;
-            text-align: center;
-            border-bottom: 2px solid transparent;
-        }
-        .tab.active {
-            border-bottom: 2px solid #4CAF50;
-            color: #4CAF50;
-        }
-        .btn {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-        }
-        .btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .btn-secondary {
-            background-color: #2196F3;
-        }
-        .btn-danger {
-            background-color: #f44336;
-        }
-        .btn-small {
-            width: auto;
-            padding: 5px 10px;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-        .btn-icon {
-            width: auto;
-            padding: 8px 12px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-icon svg {
-            margin-right: 5px;
-            width: 16px;
-            height: 16px;
-        }
-        .input-container {
-            margin-top: 10px;
-        }
-        .input-container label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .input-field {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .fade-enter-active, .fade-leave-active {
-            transition: opacity 0.3s;
-        }
-        .fade-enter-from, .fade-leave-to {
-            opacity: 0;
-        }
-        .toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            z-index: 1000;
-        }
-        .link {
-            color: #2196F3;
-            text-decoration: underline;
-        }
-        .empty-history {
-            text-align: center;
-            padding: 15px;
-            color: #888;
-        }
-        .tips {
-            background-color: #FFF9C4;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        .tips-ios {
-            background-color: #ffebee;
-        }
-        .error-container {
-            background-color: #ffebee;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #f44336;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .modal-header h3 {
-            margin: 0;
-        }
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 15px;
-            gap: 10px;
-        }
-        @media (max-width: 400px) {
-            .container {
-                padding: 10px;
-            }
-            .qr-container, .result-container, .history-container {
-                padding: 10px;
-            }
-            .header-buttons {
-                position: static;
-                margin: 10px 0;
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="./static/css/style.css"/>
 </head>
 <body>
     <div id="app">
@@ -339,8 +96,6 @@
                             <p class="history-value"><strong>Value:</strong> {{ item.value }}</p>
                             <p class="history-time">{{ formatTime(item.time) }}</p>
                             <div>
-                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.label)">Copy Label</button>
-                                <button class="btn btn-secondary btn-small" @click="copyToClipboard(item.value)">Copy Value</button>
                                 <button class="btn btn-danger btn-small" @click="deleteRecord(item.id)">Delete</button>
                             </div>
                         </div>
@@ -378,6 +133,7 @@
     </div>
 
     <script>
+        // 检查所需的库是否加载完成
         // Check if required libraries are loaded
         function checkLibraries() {
             if (typeof Html5Qrcode === 'undefined') {
@@ -389,6 +145,7 @@
             return null;
         }
 
+        // 等待文档完全加载
         // Wait for document to load completely
         document.addEventListener('DOMContentLoaded', function() {
             const { createApp } = Vue;
@@ -419,8 +176,10 @@
                     };
                 },
                 methods: {
+                    // 启动扫描器
+                    // Start the QR code scanner
                     async startScanner() {
-                        // Check if library is available
+                        // 检查库是否可用
                         if (typeof Html5Qrcode === 'undefined') {
                             this.libraryError = "QR Scanner library (Html5Qrcode) failed to load";
                             this.showToastMessage("Scanning function unavailable, please refresh the page", 3000);
@@ -430,22 +189,22 @@
                         try {
                             this.isScanning = true;
                             
-                            // Initialize scanner if not already done
+                            // 如果扫描器尚未初始化，则初始化扫描器
                             if (!this.html5QrCode) {
                                 this.html5QrCode = new Html5Qrcode("reader");
                             }
                             
-                            // Get available cameras
+                            // 获取可用的摄像头
                             try {
                                 const devices = await Html5Qrcode.getCameras();
                                 if (devices && devices.length) {
-                                    // Store available cameras
+                                    // 存储可用的摄像头
                                     this.availableCameras = devices;
 
                                     this.cameraId = devices[this.currentCameraIndex].id;
 
                                     
-                                    // Start scanning
+                                    // 开始扫描
                                     this.html5QrCode.start(
                                         this.cameraId,
                                         {
@@ -454,7 +213,7 @@
                                             aspectRatio: 1.0
                                         },
                                         (decodedText) => {
-                                            // Successful scan callback
+                                            // 成功扫描的回调函数
                                             if (this.lastScannedLabel !== decodedText) {
                                                 this.lastScannedLabel = decodedText;
                                                 
@@ -474,7 +233,7 @@
                                             }
                                         },
                                         (errorMessage) => {
-                                            // Error handling during scanning (usually no need to handle as many frames cannot be recognized)
+                                            // 扫描期间的错误处理（通常不需要处理，因为许多帧无法识别是正常的）
                                             console.log(errorMessage);
                                         }
                                     ).catch((err) => {
@@ -490,10 +249,10 @@
                                 console.error('Failed to get camera list:', error);
                                 this.isScanning = false;
                                 
-                                // Try using default camera
+                                // 尝试使用默认摄像头
                                 this.showToastMessage('Unable to get camera list, trying default camera...', 2000);
                                 
-                                // Use true as cameraId to try to access default camera
+                                // 使用true作为cameraId尝试访问默认摄像头
                                 this.html5QrCode.start(
                                     true,
                                     {
@@ -535,21 +294,25 @@
                             this.showToastMessage(`Scanner error: ${error.message}`, 3000);
                         }
                     },
+                    // 切换摄像头
+                    // Switch between available cameras
                     async switchCamera() {
-                        // Don't do anything if there are not at least 2 cameras
+                        // 如果没有至少2个摄像头，则不执行任何操作
                         if (this.availableCameras.length < 2) {
                             this.showToastMessage('Only one camera available');
                             return;
                         }
                         // this.showToastMessage(`this.availableCameras.length: ${this.availableCameras.length}`);
                         
-                        // Stop the current scanner
+                        // 停止当前扫描器
                         await this.stopScanner();
                         this.currentCameraIndex = this.test ? 1 : 0;
                         this.test = !this.test;
-                        // Restart the scanner with the new camera
+                        // 使用新摄像头重新启动扫描器
                         this.startScanner();
                     },
+                    // 停止扫描器
+                    // Stop the QR code scanner
                     stopScanner() {
                         if (this.html5QrCode && this.isScanning) {
                             return this.html5QrCode.stop().then(() => {
@@ -560,31 +323,37 @@
                         }
                         return Promise.resolve();
                     },
+                    // 关闭输入模态框
+                    // Close the input modal dialog
                     closeModal() {
                         this.showInputModal = false;
                         this.tempScannedLabel = '';
                         this.tempUserValue = '';
                     },
+                    // 保存用户输入
+                    // Save the user input value
                     saveUserInput() {
                         if (!this.tempUserValue.trim()) {
                             this.showToastMessage('Please enter a value');
                             return;
                         }
                         
-                        // Add to data records
+                        // 添加到数据记录
                         this.addToRecords(this.tempScannedLabel, this.tempUserValue);
                         
-                        // Close modal
+                        // 关闭模态框
                         this.closeModal();
                         
                         this.showToastMessage('Saved successfully');
                     },
+                    // 添加记录到扫描历史
+                    // Add a new record to the scan history
                     addToRecords(label, value) {
-                        // Create new record
+                        // 创建新记录
                         const now = new Date();
                         
-                        // Store time in MySQL DATETIME compatible format 'YYYY-MM-DD HH:MM:SS'
-                        // Using UTC to avoid timezone issues
+                        // 以MySQL DATETIME兼容格式'YYYY-MM-DD HH:MM:SS'存储时间
+                        // 使用UTC以避免时区问题
                         const mysqlDatetime = this.formatMysqlDatetime(now);
                         
                         const newRecord = {
@@ -595,15 +364,17 @@
                             mysqlDatetime: mysqlDatetime
                         };
                         
-                        // Add to records array
+                        // 添加到记录数组
                         this.scanRecords.unshift(newRecord);
                         
-                        // Save to local storage
+                        // 保存到本地存储
                         this.saveRecords();
                     },
+                    // 格式化MySQL日期时间
+                    // Format date to MySQL datetime format
                     formatMysqlDatetime(date) {
-                        // Format date to MySQL DATETIME format: YYYY-MM-DD HH:MM:SS
-                        // Using UTC to ensure consistent format regardless of locale
+                        // 将日期格式化为MySQL DATETIME格式：YYYY-MM-DD HH:MM:SS
+                        // 使用UTC确保无论区域设置如何，格式都一致
                         return date.getUTCFullYear() + '-' + 
                                String(date.getUTCMonth() + 1).padStart(2, '0') + '-' +
                                String(date.getUTCDate()).padStart(2, '0') + ' ' +
@@ -611,9 +382,11 @@
                                String(date.getUTCMinutes()).padStart(2, '0') + ':' +
                                String(date.getUTCSeconds()).padStart(2, '0');
                     },
+                    // 保存记录到本地存储
+                    // Save records to local storage
                     saveRecords() {
                         try {
-                            // Ensure all records have MySql datetime format before saving
+                            // 确保所有记录在保存前都有MySQL日期时间格式
                             this.scanRecords.forEach(record => {
                                 if (!record.mysqlDatetime && record.time) {
                                     record.mysqlDatetime = this.formatMysqlDatetime(
@@ -630,6 +403,8 @@
                             console.error('Failed to save records:', e);
                         }
                     },
+                    // 从本地存储加载记录
+                    // Load records from local storage
                     loadRecords() {
                         try {
                             const savedData = localStorage.getItem('scanRecords');
@@ -638,19 +413,19 @@
                                 this.scanRecords = data.records || [];
                                 this.nextId = data.nextId || 0;
                                 
-                                // Ensure correct time object format
+                                // 确保时间对象格式正确
                                 this.scanRecords.forEach(item => {
                                     if (typeof item.time === 'string') {
                                         item.time = new Date(item.time);
                                     }
                                     
-                                    // Ensure MySQL datetime format exists
+                                    // 确保存在MySQL日期时间格式
                                     if (!item.mysqlDatetime) {
                                         item.mysqlDatetime = this.formatMysqlDatetime(item.time);
                                     }
                                 });
                             } else {
-                                // If no saved records, add some demo data
+                                // 如果没有保存的记录，添加一些演示数据
                                 this.addDemoData();
                             }
                         } catch (e) {
@@ -658,12 +433,14 @@
                             this.scanRecords = [];
                             this.nextId = 0;
                             
-                            // Add demo data in exception case as well
+                            // 在异常情况下也添加演示数据
                             this.addDemoData();
                         }
                     },
+                    // 添加演示数据
+                    // Add some demo data
                     addDemoData() {
-                        // Add some demo data
+                        // 添加一些演示数据
                         const now = new Date();
                         const yesterday = new Date(now);
                         yesterday.setDate(yesterday.getDate() - 1);
@@ -673,27 +450,31 @@
                         this.scanRecords = [
                         ];
                         
-                        // Set next ID
+                        // 设置下一个ID
                         this.nextId = this.scanRecords.length;
                         
-                        // Don't save these demo data to localStorage
-                        // Only user-added data will be saved
+                        // 不将这些演示数据保存到localStorage
+                        // 只有用户添加的数据会被保存
                     },
+                    // 删除记录
+                    // Delete a record
                     deleteRecord(id) {
                         if (confirm('Are you sure you want to delete this record?')) {
-                            // Find the index of the record with the given id
+                            // 找到具有给定id的记录的索引
                             const index = this.scanRecords.findIndex(record => record.id === id);
                             
-                            // If found, remove it from the array
+                            // 如果找到，则从数组中删除
                             if (index !== -1) {
                                 this.scanRecords.splice(index, 1);
                                 
-                                // Save the updated records
+                                // 保存更新后的记录
                                 this.saveRecords();
                                 this.showToastMessage('Record deleted');
                             }
                         }
                     },
+                    // 清除所有历史记录
+                    // Clear all history records
                     clearHistory() {
                         if (confirm('Are you sure you want to clear all history records?')) {
                             this.scanRecords = [];
@@ -702,6 +483,8 @@
                             this.showToastMessage('History cleared');
                         }
                     },
+                    // 格式化时间显示
+                    // Format time for display
                     formatTime(date) {
                         if (!date) return '';
                         
@@ -711,54 +494,27 @@
                         
                         const d = new Date(date);
                         
-                        // Check if it's today
+                        // 检查是否是今天
                         if (d.toDateString() === now.toDateString()) {
                             return 'Today ' + d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
                         }
-                        // Check if it's yesterday
+                        // 检查是否是昨天
                         else if (d.toDateString() === yesterday.toDateString()) {
                             return 'Yesterday ' + d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
                         }
-                        // Other dates show full date
+                        // 其他日期显示完整日期
                         else {
                             return d.toLocaleDateString('en-US') + ' ' + d.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'});
                         }
                     },
+                    // 检查文本是否为URL
+                    // Check if text is a URL
                     isUrl(text) {
                         if (!text) return false;
                         return /^(https?:\/\/)/i.test(text);
                     },
-                    copyToClipboard(text) {
-                        if (!navigator.clipboard) {
-                            // Fallback method
-                            const textArea = document.createElement('textarea');
-                            textArea.value = text;
-                            textArea.style.position = 'fixed';  // Avoid scrolling to bottom
-                            document.body.appendChild(textArea);
-                            textArea.focus();
-                            textArea.select();
-                            
-                            try {
-                                const successful = document.execCommand('copy');
-                                if (successful) {
-                                    this.showToastMessage('Copied successfully');
-                                } else {
-                                    this.showToastMessage('Copy failed, please copy manually');
-                                }
-                            } catch (err) {
-                                this.showToastMessage('Copy failed: ' + err);
-                            }
-                            
-                            document.body.removeChild(textArea);
-                            return;
-                        }
-                        
-                        navigator.clipboard.writeText(text).then(() => {
-                            this.showToastMessage('Copied successfully');
-                        }, (err) => {
-                            this.showToastMessage('Copy failed: ' + err);
-                        });
-                    },
+                    // 导出到Excel
+                    // Export data to Excel
                     exportToExcel() {
                         if (this.scanRecords.length === 0) {
                             this.showToastMessage('No data available for export');
@@ -766,7 +522,7 @@
                         }
                         
                         try {
-                            // Prepare export data
+                            // 准备导出数据
                             const exportData = this.scanRecords.map(item => ({
                                 ID: item.id,
                                 Label: item.label,
@@ -775,14 +531,14 @@
                                 MySQLDateTime: item.mysqlDatetime
                             }));
                             
-                            // Create worksheet
+                            // 创建工作表
                             const worksheet = XLSX.utils.json_to_sheet(exportData);
                             
-                            // Create workbook
+                            // 创建工作簿
                             const workbook = XLSX.utils.book_new();
                             XLSX.utils.book_append_sheet(workbook, worksheet, "Scan Records");
                             
-                            // Generate Excel file and download
+                            // 生成Excel文件并下载
                             const now = new Date();
                             const fileName = `ScanRecords_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}.xlsx`;
                             
@@ -793,48 +549,56 @@
                             this.showToastMessage('Export failed: ' + error.message);
                         }
                     },
+                    // 发送数据
+                    // Send data to server (to be implemented)
                     sendData() {
-                        // This method to be implemented by user
+                        // 此方法由用户实现
                         if (this.scanRecords.length === 0) {
                             this.showToastMessage('No data available to send');
                             return;
                         }
                         
-                        // This is just an empty method, specific logic to be implemented by user
+                        // 这只是一个空方法，具体逻辑由用户实现
                         console.log('Preparing to send data:', this.scanRecords);
                         console.log('MySQL compatible datetime values:', this.scanRecords.map(item => item.mysqlDatetime));
                         this.showToastMessage('Send function needs to be implemented by you');
                     },
+                    // 显示提示消息
+                    // Show toast notification message
                     showToastMessage(message, duration = 2000) {
                         this.toastMessage = message;
                         this.showToast = true;
                         
-                        // Clear previous timer
+                        // 清除之前的计时器
                         if (this.toastTimer) {
                             clearTimeout(this.toastTimer);
                         }
                         
-                        // Set timer to automatically hide toast
+                        // 设置计时器自动隐藏提示消息
                         this.toastTimer = setTimeout(() => {
                             this.showToast = false;
                         }, duration);
                     }
                 },
+                // 组件挂载完成时执行
+                // Called when the component is mounted
                 mounted() {
-                    // Check if libraries loaded successfully
+                    // 检查库是否成功加载
                     if (this.libraryError) {
                         console.error('Library loading error:', this.libraryError);
                         this.showToastMessage(this.libraryError, 5000);
                     }
                     
-                    // Load history records
+                    // 加载历史记录
                     this.loadRecords();
                     
-                    // Automatically stop scanner when page is left
+                    // 当页面离开时自动停止扫描器
                     window.addEventListener('beforeunload', () => {
                         this.stopScanner();
                     });
                 },
+                // 组件卸载前执行
+                // Called before the component is unmounted
                 beforeUnmount() {
                     this.stopScanner();
                     window.removeEventListener('beforeunload', this.stopScanner);
