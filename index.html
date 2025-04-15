@@ -44,12 +44,6 @@
             </div>
             
             <div v-if="activeTab === 'scan'">
-                <div class="tips" v-if="isMobile">
-                    <p><strong>Tip:</strong> Please ensure you have granted camera permissions.</p>
-                </div>
-                <div class="tips tips-ios" v-if="isIOS">
-                    <p><strong>iOS Note:</strong> On iOS, you need to access via HTTPS to use the camera function.</p>
-                </div>
                 
                 <div class="error-container" v-if="libraryError">
                     <p><strong>Loading Error:</strong> {{ libraryError }}</p>
@@ -75,7 +69,6 @@
                         <a :href="lastScannedLabel" target="_blank" class="link">{{ lastScannedLabel }}</a>
                     </p>
                     <p v-else>{{ lastScannedLabel }}</p>
-                    <button class="btn btn-secondary btn-small" @click="copyToClipboard(lastScannedLabel)">Copy Result</button>
                 </div>
             </div>
             
